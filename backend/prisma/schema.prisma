@@ -19,4 +19,33 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+
+  ownedBoards Board[] @relation("BoardOwner")
+  memberships BoardMember[] 
+}
+
+model Board {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String  @unique
+  createdAt DateTime @default(now())
+
+  owner     User     @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  members   BoardMember[] 
+  @@index([ownerId])
+}
+
+model BoardMember {
+  id      String @id @default(cuid())
+  boardId String
+  userId  String
+  role    String // "OWNER" | "MEMBER"
+
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, userId])
+  @@index([userId])
+  @@index([boardId])
 }
