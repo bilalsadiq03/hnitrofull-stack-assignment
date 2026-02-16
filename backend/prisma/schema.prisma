@@ -22,17 +22,19 @@ model User {
 
   ownedBoards Board[] @relation("BoardOwner")
   memberships BoardMember[] 
+  assignedTasks Task[]
 }
 
 model Board {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  ownerId   String  @unique
-  createdAt DateTime @default(now())
+  ownerId   String
+  createdAt DateTime      @default(now())
 
-  owner     User     @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner     User          @relation("BoardOwner", fields: [ownerId], references: [id])
+  members   BoardMember[]
+  lists     List[]
 
-  members   BoardMember[] 
   @@index([ownerId])
 }
 
@@ -48,4 +50,33 @@ model BoardMember {
   @@unique([boardId, userId])
   @@index([userId])
   @@index([boardId])
+}
+
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  position  Int
+  boardId   String
+  createdAt DateTime @default(now())
+
+  board     Board    @relation(fields: [boardId], references: [id])
+  tasks     Task[]
+
+  @@index([boardId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  position    Int
+  listId      String
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+
+  list        List     @relation(fields: [listId], references: [id])
+  assignee    User?    @relation(fields: [assignedTo], references: [id])
+
+  @@index([listId])
+  @@index([assignedTo])
 }
